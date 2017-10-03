@@ -61,8 +61,9 @@ export class StorePage {
   markers: any = [];
   myPosition: any;
   geocoder: any = new google.maps.Geocoder();
-  directionsDisplay: any = new google.maps.DirectionsRenderer();
-  directionsService: any = new google.maps.DirectionsService();
+  directionsDisplay: any;
+  directionsService: any;
+  infoWindow: any = null;
 
   @ViewChild('map') mapElement: ElementRef;
   map: any;
@@ -75,40 +76,34 @@ export class StorePage {
       .then(() => {
         // Try Browser Mode First
         navigator.geolocation.getCurrentPosition(position => {
-          this.myPosition = position;
-
-          this.loadMap(position.coords);
-
-          this.items.forEach(item => {
-            //let addString = [item.address.address1, item.address.city, item.address.state, item.address.zipcode].join(', ');
-            //this.geocodeAddress(item.name, addString);
-
-            this.addMarker(item.address.coordinates);
-          });
-
-          this.fitBounds();
-        }, () => {
-          // Switch to Geolocation plugin
-          geolocation.getCurrentPosition().then(position => {
-            this.myPosition = position;
-
-            this.loadMap(position.coords);
-
-            this.items.forEach(item => {
-              this.addMarker(item.address.coordinates);
-            });
-
-            this.fitBounds();
-          })
+          this.initMap(position);
         });
 
-        this.directionsDisplay.setMap(this.map);
+      }, () => {
+        // Switch to Geolocation plugin
+        geolocation.getCurrentPosition().then(position => {
+          this.initMap(position);
+        });
       });
   }
 
-  geocodeAddress(name: string, address: any) {
+  initMap(position: any) {
+    this.myPosition = position;
 
-    this.geocoder.geocode({'address': address}, function (results, status) {
+    this.loadMap(this.myPosition.coords);
+
+    this.items.forEach(item => {
+      this.addMarker(item.address.coordinates);
+    });
+
+    this.fitBounds();
+  }
+
+  geocodeAddress(name: string, location: any) {
+
+    this.geocoder.geocode({
+      'location': location
+    }, function (results, status) {
       if (status == 'OK') {
         this.map.setCenter(results[0].geometry.location);
 
@@ -166,15 +161,16 @@ export class StorePage {
 
   loadMap(position: any) {
 
-    let latLng = new google.maps.LatLng(position.latitude, position.longitude);
-
     let mapOptions = {
-      center: latLng,
+      center: new google.maps.LatLng(position.latitude, position.longitude),
       zoom: 15,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
 
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
+
+    this.directionsDisplay = new google.maps.DirectionsRenderer({ map: this.map });
+    this.directionsService = new google.maps.DirectionsService;
   }
 
   addMarker(position: any) {
@@ -190,15 +186,13 @@ export class StorePage {
     let content = "<h4>Information!</h4>";
 
     this.addInfoWindow(marker, content);
-
-    this.calculateAndDisplayRoute(position);
   }
 
   calculateAndDisplayRoute(position: any) {
 
     this.directionsService.route({
-      origin: new google.maps.LatLng(this.myPosition.latitude, this.myPosition.longitude),
-      destination: new google.maps.LatLng(position.latitude, position.longitude),
+      origin: new google.maps.LatLng(this.myPosition.coords.latitude, this.myPosition.coords.longitude),
+      destination: new google.maps.LatLng(position.lat(), position.lng()),
       travelMode: 'DRIVING'
     }, (response, status) => {
       if (status === 'OK') {
@@ -209,13 +203,18 @@ export class StorePage {
 
   addInfoWindow(marker, content) {
 
-    let infoWindow = new google.maps.InfoWindow({
+    this.infoWindow = new google.maps.InfoWindow({
       content: content
     });
 
     google.maps.event.addListener(marker, 'click', () => {
+      if (this.infoWindow) {
+        this.infoWindow.close();
+      }
 
-      infoWindow.open(this.map, marker);
+      this.infoWindow.open(this.map, marker);
+
+      this.calculateAndDisplayRoute(marker.position);
     });
   }
 
