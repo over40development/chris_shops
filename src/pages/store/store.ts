@@ -2,7 +2,7 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { NavController, Platform } from 'ionic-angular';
 import { Geolocation } from '@ionic-native/geolocation';
 
-declare var google;
+declare let google;
 
 @Component({
   selector: 'page-store',
@@ -60,7 +60,7 @@ export class StorePage {
   itemExpandHeight: number = 75;
   markers: any = [];
   myPosition: any;
-  geocoder: any = new google.maps.Geocoder();
+  geoCoder: any = new google.maps.Geocoder();
   directionsDisplay: any;
   directionsService: any;
   infoWindow: any = null;
@@ -69,6 +69,7 @@ export class StorePage {
   map: any;
 
   constructor(platform: Platform, public navCtrl: NavController, geolocation: Geolocation) {
+
     // Reset markers
     this.markers = [];
 
@@ -88,12 +89,13 @@ export class StorePage {
   }
 
   initMap(position: any) {
+
     this.myPosition = position;
 
     this.loadMap(this.myPosition.coords);
 
     this.items.forEach(item => {
-      this.addMarker(item.address.coordinates);
+      this.addMarker(item);
     });
 
     this.fitBounds();
@@ -101,7 +103,7 @@ export class StorePage {
 
   geocodeAddress(name: string, location: any) {
 
-    this.geocoder.geocode({
+    this.geoCoder.geocode({
       'location': location
     }, function (results, status) {
       if (status == 'OK') {
@@ -173,17 +175,18 @@ export class StorePage {
     this.directionsService = new google.maps.DirectionsService;
   }
 
-  addMarker(position: any) {
+  addMarker(location: any) {
 
     let marker = new google.maps.Marker({
       animation: google.maps.Animation.DROP,
-      position: new google.maps.LatLng(position.latitude, position.longitude),
+      position: new google.maps.LatLng(location.address.coordinates.latitude, location.address.coordinates.longitude),
       map: this.map
     });
 
     this.markers.push(marker);
 
-    let content = "<h4>Information!</h4>";
+    // This is called interopulation (aka templating)
+    let content = `<h4>${location.name}</h4>`;
 
     this.addInfoWindow(marker, content);
   }
