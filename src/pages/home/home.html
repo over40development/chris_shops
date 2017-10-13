@@ -1,17 +1,27 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>Home</ion-title>
+    <ion-title>
+      Look!  It Works!
+    </ion-title>
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
-  <h2>Welcome to Ionic!</h2>
-  <p>
-    This starter project comes with simple tabs-based layout for apps
-    that are going to primarily use a Tabbed UI.
-  </p>
-  <p>
-    Take a look at the <code>src/pages/</code> directory to add or change tabs,
-    update any existing page or create new pages.
-  </p>
+<ion-content scroll="false">
+  <div style="height:50%;width:100%" #map id="map"></div>
+
+  <ion-scroll direction="y" overflow-scroll="false" style="overflow-y:scroll;height:50%;">
+    <ion-card>
+      <button detail-none (click)="expandItem(item)" ion-item *ngFor="let item of items">
+        <ion-card-header>
+          <h3>{{item.name}}</h3>
+        </ion-card-header>
+        <expandable [expandHeight]="itemExpandHeight" [expanded]="item.expanded">
+          <h1>{{item.address.address1}}</h1>
+          <h2>{{item.address.city}}, {{item.address.state}} {{item.address.zipcode}}</h2>
+        </expandable>
+          <button ion-button clear item-end>View</button>
+      </button>
+    </ion-card>
+  </ion-scroll>
+
 </ion-content>
