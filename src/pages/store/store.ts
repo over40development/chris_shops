@@ -12,7 +12,7 @@ export class StorePage {
 
   items: any = [
     {
-      name: 'Heaths Crackhouse',
+      name: 'User A',
       expanded: false,
       id: 1,
       address: {
@@ -27,7 +27,7 @@ export class StorePage {
         }
       }
     }, {
-      name: 'Jonathon Dropouts',
+      name: 'User B',
       expanded: false,
       id: 2,
       address: {
@@ -42,7 +42,7 @@ export class StorePage {
         }
       }
     }, {
-      name: 'Wallys Dingleberries',
+      name: 'User C',
       id: 3,
       expanded: false,
       address: {
